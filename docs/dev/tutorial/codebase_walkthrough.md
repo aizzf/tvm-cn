@@ -106,9 +106,13 @@ inline Schedule create_schedule(Array<Operation> ops) {
 
 简单来说，上述 `create_schedule()` 函数创建的默认 schedule 调用
 `tvm.build(...)`。
+需要添加必要的线程绑定，使其能够在GPU上运行。
 
 ``` python
 target = "cuda"
+bx, tx = s[C].split(C.op.axis[0], factor=64)
+s[C].bind(bx, tvm.te.thread_axis("blockIdx.x"))
+s[C].bind(tx, tvm.te.thread_axis("threadIdx.x"))
 fadd = tvm.build(s, [A, B, C], target)
 ```
 
